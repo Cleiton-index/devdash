@@ -89,6 +89,124 @@ function App() {
   }, [])
 
   // =========================
+  // NORMALIZAR CLIENTES
+  // =========================
+
+  useEffect(() => {
+
+    if (!clientes.length) {
+      return
+    }
+
+    try {
+
+      const clientesUnicos = []
+      const mapaClientes = new Map()
+
+      clientes.forEach((cliente) => {
+
+        const chave =
+          String(cliente.nome || '')
+            .trim()
+            .replace(/\\s+/g, ' ')
+            .toLowerCase()
+
+        if (!chave) {
+          return
+        }
+
+        if (!mapaClientes.has(chave)) {
+
+          mapaClientes.set(
+            chave,
+            cliente.id
+          )
+
+          clientesUnicos.push(cliente)
+
+        }
+
+      })
+
+      const idsDuplicados = new Map()
+
+      clientes.forEach((cliente) => {
+
+        const chave =
+          String(cliente.nome || '')
+            .trim()
+            .replace(/\\s+/g, ' ')
+            .toLowerCase()
+
+        if (!chave) {
+          return
+        }
+
+        const idPrincipal =
+          mapaClientes.get(chave)
+
+        if (cliente.id !== idPrincipal) {
+
+          idsDuplicados.set(
+            cliente.id,
+            idPrincipal
+          )
+
+        }
+
+      })
+
+      if (idsDuplicados.size > 0) {
+
+        const projetosAtualizados =
+          projetos.map((projeto) => {
+
+            if (
+              projeto.clienteId &&
+              idsDuplicados.has(projeto.clienteId)
+            ) {
+
+              return {
+                ...projeto,
+                clienteId:
+                  idsDuplicados.get(
+                    projeto.clienteId
+                  )
+              }
+
+            }
+
+            return projeto
+
+          })
+
+        setClientes(clientesUnicos)
+        setProjetos(projetosAtualizados)
+
+        localStorage.setItem(
+          'devdash-clientes',
+          JSON.stringify(clientesUnicos)
+        )
+
+        localStorage.setItem(
+          'devdash-projetos',
+          JSON.stringify(projetosAtualizados)
+        )
+
+      }
+
+    } catch (erro) {
+
+      console.error(
+        'Erro ao normalizar clientes:',
+        erro
+      )
+
+    }
+
+  }, [clientes, projetos])
+
+  // =========================
   // DADOS DINÂMICOS
   // =========================
 

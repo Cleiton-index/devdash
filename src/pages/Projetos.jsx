@@ -66,6 +66,41 @@ function Projetos() {
   })
 
   // =========================
+  // CLIENTES
+  // =========================
+
+  const [clientes, setClientes] = useState(() => {
+
+    try {
+
+      const clientesSalvos =
+        localStorage.getItem('devdash-clientes')
+
+      if (!clientesSalvos) {
+        return []
+      }
+
+      const dados =
+        JSON.parse(clientesSalvos)
+
+      return Array.isArray(dados)
+        ? dados
+        : []
+
+    } catch (erro) {
+
+      console.error(
+        'Erro ao carregar clientes:',
+        erro
+      )
+
+      return []
+
+    }
+
+  })
+
+  // =========================
   // FORMULÁRIO
   // =========================
 
@@ -76,6 +111,9 @@ function Projetos() {
     useState('')
 
   const [cliente, setCliente] =
+    useState('')
+
+  const [clienteId, setClienteId] =
     useState('')
 
   const [descricao, setDescricao] =
@@ -104,6 +142,101 @@ function Projetos() {
   }, [projetos])
 
   // =========================
+  // MIGRAR PROJETOS PARA CLIENTE ID
+  // =========================
+
+  useEffect(() => {
+
+    if (!projetos.length) {
+      return
+    }
+
+    try {
+
+      let clientesAtuais = [...clientes]
+      let houveAlteracao = false
+
+      const projetosMigrados =
+        projetos.map((projeto) => {
+
+          if (projeto.clienteId) {
+            return projeto
+          }
+
+          const nomeCliente =
+            String(projeto.cliente || '').trim()
+
+          if (!nomeCliente) {
+            return projeto
+          }
+
+          let clienteEncontrado =
+            clientesAtuais.find(
+              (item) =>
+                String(item.nome || '')
+                  .trim()
+                  .toLowerCase() ===
+                nomeCliente.toLowerCase()
+            )
+
+          if (!clienteEncontrado) {
+
+            clienteEncontrado = {
+
+              id: Date.now() +
+                Math.floor(
+                  Math.random() * 100000
+                ),
+
+              nome: nomeCliente,
+
+              email: '',
+
+              telefone: ''
+
+            }
+
+            clientesAtuais = [
+              ...clientesAtuais,
+              clienteEncontrado
+            ]
+
+          }
+
+          houveAlteracao = true
+
+          return {
+            ...projeto,
+            clienteId: clienteEncontrado.id
+          }
+
+        })
+
+      if (houveAlteracao) {
+
+        setProjetos(projetosMigrados)
+
+        setClientes(clientesAtuais)
+
+        localStorage.setItem(
+          'devdash-clientes',
+          JSON.stringify(clientesAtuais)
+        )
+
+      }
+
+    } catch (erro) {
+
+      console.error(
+        'Erro na migração dos projetos:',
+        erro
+      )
+
+    }
+
+  }, [projetos, clientes])
+
+  // =========================
   // LIMPAR FORMULÁRIO
   // =========================
 
@@ -130,13 +263,25 @@ function salvarProjeto(e) {
     return
   }
 
-  const nomeCliente = cliente.trim()
+  const clienteSelecionado =
+    clientes.find(
+      (item) =>
+        String(item.id) ===
+        String(clienteId)
+    )
+
+  const nomeCliente =
+    clienteSelecionado?.nome ||
+    cliente.trim()
 
   const projetoAtualizado = {
 
     nome: nome.trim(),
 
     cliente: nomeCliente,
+
+    clienteId:
+      clienteSelecionado?.id || null,
 
     descricao: descricao.trim(),
 
@@ -193,67 +338,6 @@ function salvarProjeto(e) {
 
     ])
 
-    // CADASTRAR CLIENTE AUTOMATICAMENTE
-
-    if (nomeCliente) {
-
-      try {
-
-        const clientesSalvos =
-          localStorage.getItem(
-            'devdash-clientes'
-          )
-
-        const clientes =
-          clientesSalvos
-            ? JSON.parse(clientesSalvos)
-            : []
-
-        const clienteExiste =
-          clientes.some(
-            (item) =>
-              item.nome.trim().toLowerCase() ===
-              nomeCliente.toLowerCase()
-          )
-
-        if (!clienteExiste) {
-
-          const novoCliente = {
-
-            id: Date.now() + 1,
-
-            nome: nomeCliente,
-
-            email: '',
-
-            telefone: ''
-
-          }
-
-          localStorage.setItem(
-
-            'devdash-clientes',
-
-            JSON.stringify([
-              ...clientes,
-              novoCliente
-            ])
-
-          )
-
-        }
-
-      } catch (erro) {
-
-        console.error(
-          'Erro ao cadastrar cliente automaticamente:',
-          erro
-        )
-
-      }
-
-    }
-
   }
 
   limparFormulario()
@@ -261,6 +345,7 @@ function salvarProjeto(e) {
   setMostrarFormulario(false)
 
 }
+
   // =========================
   // EDITAR PROJETO
   // =========================
@@ -268,6 +353,12 @@ function salvarProjeto(e) {
   function editarProjeto(projeto) {
 
     setNome(projeto.nome || '')
+
+    setClienteId(
+      projeto.clienteId
+        ? String(projeto.clienteId)
+        : ''
+    )
 
     setCliente(projeto.cliente || '')
 
@@ -411,14 +502,45 @@ function salvarProjeto(e) {
                   Cliente
                 </label>
 
-                <input
-                  type="text"
-                  value={cliente}
-                  onChange={(e) =>
-                    setCliente(e.target.value)
-                  }
-                  placeholder="Digite o nome do cliente"
-                />
+                <select
+                  value={clienteId}
+                  onChange={(e) => {
+
+                    const idSelecionado =
+                      e.target.value
+
+                    setClienteId(idSelecionado)
+
+                    const clienteSelecionado =
+                      clientes.find(
+                        (item) =>
+                          String(item.id) ===
+                          String(idSelecionado)
+                      )
+
+                    setCliente(
+                      clienteSelecionado?.nome || ''
+                    )
+
+                  }}
+                >
+
+                  <option value="">
+                    Selecione um cliente
+                  </option>
+
+                  {clientes.map((item) => (
+
+                    <option
+                      key={item.id}
+                      value={item.id}
+                    >
+                      {item.nome}
+                    </option>
+
+                  ))}
+
+                </select>
 
               </div>
 
