@@ -5,20 +5,6 @@ import GraficoFaturamento from './components/GraficoFaturamento'
 import Projetos from './pages/Projetos'
 import Clientes from './pages/Clientes'
 
-const dadosFaturamento = [
-  { mes: 'Jan', valor: 4200 },
-  { mes: 'Fev', valor: 5100 },
-  { mes: 'Mar', valor: 4800 },
-  { mes: 'Abr', valor: 6200 },
-  { mes: 'Mai', valor: 7100 },
-  { mes: 'Jun', valor: 8450 },
-  { mes: 'Jul', valor: 9200 },
-  { mes: 'Ago', valor: 9800 },
-  { mes: 'Set', valor: 10500 },
-  { mes: 'Out', valor: 11200 },
-  { mes: 'Nov', valor: 12100 },
-  { mes: 'Dez', valor: 13500 }
-]
 
 function App() {
 
@@ -125,7 +111,12 @@ function App() {
         Number(projeto.valor || 0),
       0
     )
-
+const dadosFaturamento = projetos.map(
+  (projeto) => ({
+    mes: projeto.nome,
+    valor: Number(projeto.valor || 0)
+  })
+)
   // =========================
   // GRÁFICO
   // =========================

@@ -122,83 +122,145 @@ function Projetos() {
   // SALVAR PROJETO
   // =========================
 
-  function salvarProjeto(e) {
+function salvarProjeto(e) {
 
-    e.preventDefault()
+  e.preventDefault()
 
-    if (!nome.trim()) {
-      return
-    }
+  if (!nome.trim()) {
+    return
+  }
 
-    const projetoAtualizado = {
+  const nomeCliente = cliente.trim()
 
-      nome: nome.trim(),
+  const projetoAtualizado = {
 
-      cliente: cliente.trim(),
+    nome: nome.trim(),
 
-      descricao: descricao.trim(),
+    cliente: nomeCliente,
 
-      valor: Number(
-        String(valor)
-          .replace(',', '.')
-          .replace(/[^\d.-]/g, '')
-      ) || 0,
+    descricao: descricao.trim(),
 
-      status
+    valor: Number(
+      String(valor)
+        .replace(',', '.')
+        .replace(/[^\d.-]/g, '')
+    ) || 0,
 
-    }
-
-    // EDITAR
-
-    if (editandoId !== null) {
-
-      setProjetos(
-
-        projetos.map((projeto) =>
-
-          projeto.id === editandoId
-
-            ? {
-                ...projeto,
-                ...projetoAtualizado
-              }
-
-            : projeto
-
-        )
-
-      )
-
-    }
-
-    // NOVO PROJETO
-
-    else {
-
-      const novoProjeto = {
-
-        id: Date.now(),
-
-        ...projetoAtualizado
-
-      }
-
-      setProjetos([
-
-        ...projetos,
-
-        novoProjeto
-
-      ])
-
-    }
-
-    limparFormulario()
-
-    setMostrarFormulario(false)
+    status
 
   }
 
+  // EDITAR PROJETO
+
+  if (editandoId !== null) {
+
+    setProjetos(
+
+      projetos.map((projeto) =>
+
+        projeto.id === editandoId
+
+          ? {
+              ...projeto,
+              ...projetoAtualizado
+            }
+
+          : projeto
+
+      )
+
+    )
+
+  }
+
+  // NOVO PROJETO
+
+  else {
+
+    const novoProjeto = {
+
+      id: Date.now(),
+
+      ...projetoAtualizado
+
+    }
+
+    setProjetos([
+
+      ...projetos,
+
+      novoProjeto
+
+    ])
+
+    // CADASTRAR CLIENTE AUTOMATICAMENTE
+
+    if (nomeCliente) {
+
+      try {
+
+        const clientesSalvos =
+          localStorage.getItem(
+            'devdash-clientes'
+          )
+
+        const clientes =
+          clientesSalvos
+            ? JSON.parse(clientesSalvos)
+            : []
+
+        const clienteExiste =
+          clientes.some(
+            (item) =>
+              item.nome.trim().toLowerCase() ===
+              nomeCliente.toLowerCase()
+          )
+
+        if (!clienteExiste) {
+
+          const novoCliente = {
+
+            id: Date.now() + 1,
+
+            nome: nomeCliente,
+
+            email: '',
+
+            telefone: ''
+
+          }
+
+          localStorage.setItem(
+
+            'devdash-clientes',
+
+            JSON.stringify([
+              ...clientes,
+              novoCliente
+            ])
+
+          )
+
+        }
+
+      } catch (erro) {
+
+        console.error(
+          'Erro ao cadastrar cliente automaticamente:',
+          erro
+        )
+
+      }
+
+    }
+
+  }
+
+  limparFormulario()
+
+  setMostrarFormulario(false)
+
+}
   // =========================
   // EDITAR PROJETO
   // =========================
