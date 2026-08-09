@@ -1,294 +1,205 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState } from "react";
 
 function Clientes() {
-
   const clientesIniciais = [
     {
       id: 1,
-      nome: 'Farmácia Silva',
-      email: 'contato@farmaciasilva.com',
-      telefone: '(67) 99999-0000'
-    }
-  ]
+      nome: "Farmácia Silva",
+      email: "contato@farmaciasilva.com",
+      telefone: "(67) 99999-0000",
+    },
+  ];
 
   const [clientes, setClientes] = useState(() => {
+    const clientesSalvos = localStorage.getItem("devdash-clientes");
 
-    const clientesSalvos =
-      localStorage.getItem('devdash-clientes')
+    return clientesSalvos ? JSON.parse(clientesSalvos) : clientesIniciais;
+  });
 
-    return clientesSalvos
-      ? JSON.parse(clientesSalvos)
-      : clientesIniciais
+  const [mostrarFormulario, setMostrarFormulario] = useState(false);
 
-  })
+  const [nome, setNome] = useState("");
+  const [email, setEmail] = useState("");
+  const [telefone, setTelefone] = useState("");
 
-  const [mostrarFormulario, setMostrarFormulario] =
-    useState(false)
-
-  const [nome, setNome] = useState('')
-  const [email, setEmail] = useState('')
-  const [telefone, setTelefone] = useState('')
-
-  const [editandoId, setEditandoId] =
-    useState(null)
+  const [editandoId, setEditandoId] = useState(null);
 
   useEffect(() => {
-
-    localStorage.setItem(
-      'devdash-clientes',
-      JSON.stringify(clientes)
-    )
-
-  }, [clientes])
+    localStorage.setItem("devdash-clientes", JSON.stringify(clientes));
+  }, [clientes]);
 
   function limparFormulario() {
-
-    setNome('')
-    setEmail('')
-    setTelefone('')
-    setEditandoId(null)
-
+    setNome("");
+    setEmail("");
+    setTelefone("");
+    setEditandoId(null);
   }
 
   function salvarCliente(e) {
-
-    e.preventDefault()
+    e.preventDefault();
 
     if (!nome.trim()) {
-      return
+      return;
     }
 
     if (editandoId !== null) {
-
       setClientes(
-
         clientes.map((cliente) =>
           cliente.id === editandoId
             ? {
                 ...cliente,
                 nome,
                 email,
-                telefone
+                telefone,
               }
-            : cliente
-        )
-
-      )
-
+            : cliente,
+        ),
+      );
     } else {
-
       const novoCliente = {
         id: Date.now(),
         nome,
         email,
-        telefone
-      }
+        telefone,
+      };
 
-      setClientes([
-        ...clientes,
-        novoCliente
-      ])
-
+      setClientes([...clientes, novoCliente]);
     }
 
-    limparFormulario()
-    setMostrarFormulario(false)
-
+    limparFormulario();
+    setMostrarFormulario(false);
   }
 
   function editarCliente(cliente) {
+    setNome(cliente.nome);
+    setEmail(cliente.email);
+    setTelefone(cliente.telefone);
 
-    setNome(cliente.nome)
-    setEmail(cliente.email)
-    setTelefone(cliente.telefone)
-
-    setEditandoId(cliente.id)
-    setMostrarFormulario(true)
-
+    setEditandoId(cliente.id);
+    setMostrarFormulario(true);
   }
 
   function excluirCliente(id) {
-
     const confirmar = window.confirm(
-      'Tem certeza que deseja excluir este cliente?'
-    )
+      "Tem certeza que deseja excluir este cliente?",
+    );
 
     if (!confirmar) {
-      return
+      return;
     }
 
-    setClientes(
-      clientes.filter(
-        (cliente) => cliente.id !== id
-      )
-    )
-
+    setClientes(clientes.filter((cliente) => cliente.id !== id));
   }
 
   return (
-
     <div className="pagina-projetos">
-
       <div className="pagina-header">
-
         <div>
-
           <h1>Clientes</h1>
 
-          <p>
-            Gerencie seus clientes
-          </p>
-
+          <p>Gerencie seus clientes</p>
         </div>
 
         <button
           className="novo-projeto"
           onClick={() => {
-
             if (mostrarFormulario) {
-              limparFormulario()
+              limparFormulario();
             }
 
-            setMostrarFormulario(
-              !mostrarFormulario
-            )
-
+            setMostrarFormulario(!mostrarFormulario);
           }}
         >
-
-          {mostrarFormulario
-            ? '✕ Fechar'
-            : '+ Novo cliente'}
-
+          {mostrarFormulario ? "✕ Fechar" : "+ Novo cliente"}
         </button>
-
       </div>
 
       {mostrarFormulario && (
+        <form className="formulario-projeto" onSubmit={salvarCliente}>
+          <h2>{editandoId !== null ? "Editar cliente" : "Novo cliente"}</h2>
 
-        <form
-          className="formulario-projeto"
-          onSubmit={salvarCliente}
-        >
-
-          <h2>
-
-            {editandoId !== null
-              ? 'Editar cliente'
-              : 'Novo cliente'}
-
-          </h2>
-
-          <label>
-            Nome
-          </label>
+          <label>Nome</label>
 
           <input
             type="text"
             placeholder="Nome do cliente"
             value={nome}
-            onChange={(e) =>
-              setNome(e.target.value)
-            }
+            onChange={(e) => setNome(e.target.value)}
           />
 
-          <label>
-            E-mail
-          </label>
+          <label>E-mail</label>
 
           <input
             type="email"
             placeholder="cliente@email.com"
             value={email}
-            onChange={(e) =>
-              setEmail(e.target.value)
-            }
+            onChange={(e) => setEmail(e.target.value)}
           />
 
-          <label>
-            Telefone
-          </label>
+          <label>Telefone</label>
 
           <input
             type="text"
             placeholder="(67) 99999-9999"
             value={telefone}
-            onChange={(e) =>
-              setTelefone(e.target.value)
-            }
+            onChange={(e) => setTelefone(e.target.value)}
           />
 
-          <button
-            type="submit"
-            className="salvar-projeto"
-          >
-
-            {editandoId !== null
-              ? 'Salvar alterações'
-              : 'Salvar cliente'}
-
+          <button type="submit" className="salvar-projeto">
+            {editandoId !== null ? "Salvar alterações" : "Salvar cliente"}
           </button>
-
         </form>
-
       )}
 
       <div className="projetos-lista">
-
         {clientes.map((cliente) => (
+          <div className="projeto-item" key={cliente.id}>
+            <div className="cliente-info">
 
-          <div
-            className="projeto-item"
-            key={cliente.id}
-          >
+              <div className="cliente-avatar">
+                {cliente.nome?.trim()?.charAt(0)?.toUpperCase() || '?'}
+              </div>
 
-            <div>
+              <div className="cliente-dados">
 
-              <h3>
-                {cliente.nome}
-              </h3>
+                <h3>{cliente.nome}</h3>
 
-              <p>
-                📧 {cliente.email}
-              </p>
+                <span className="cliente-label">
+                  Cliente cadastrado
+                </span>
 
-              <p>
-                📱 {cliente.telefone}
-              </p>
+                <p>
+                  📧 {cliente.email || 'E-mail não informado'}
+                </p>
+
+                <p>
+                  📱 {cliente.telefone || 'Telefone não informado'}
+                </p>
+
+              </div>
 
             </div>
 
             <div className="projeto-acoes">
-
               <button
                 className="editar-projeto"
-                onClick={() =>
-                  editarCliente(cliente)
-                }
+                onClick={() => editarCliente(cliente)}
               >
                 ✏️
               </button>
 
               <button
                 className="excluir-projeto"
-                onClick={() =>
-                  excluirCliente(cliente.id)
-                }
+                onClick={() => excluirCliente(cliente.id)}
               >
                 🗑️
               </button>
-
             </div>
-
           </div>
-
         ))}
-
       </div>
-
     </div>
-
-  )
+  );
 }
 
-export default Clientes
+export default Clientes;

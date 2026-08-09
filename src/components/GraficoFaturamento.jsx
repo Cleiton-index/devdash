@@ -9,10 +9,11 @@ import {
 } from 'recharts'
 
 function formatarValor(valor) {
-  return `R$ ${valor.toLocaleString('pt-BR')}`
+  return `R$ ${Number(valor || 0).toLocaleString('pt-BR')}`
 }
 
 function TooltipPersonalizado({ active, payload, label }) {
+
   if (!active || !payload || !payload.length) {
     return null
   }
@@ -20,12 +21,19 @@ function TooltipPersonalizado({ active, payload, label }) {
   return (
     <div className="tooltip">
       <strong>{label}</strong>
-      <p>{formatarValor(payload[0].value)}</p>
+
+      <p>
+        {formatarValor(payload[0].value)}
+      </p>
     </div>
   )
 }
 
-function GraficoFaturamento({ dados, periodo, setPeriodo }) {
+function GraficoFaturamento({
+  dados,
+  periodo,
+  setPeriodo
+}) {
 
   let dadosFiltrados = dados
 
@@ -38,69 +46,139 @@ function GraficoFaturamento({ dados, periodo, setPeriodo }) {
   }
 
   return (
-    <div className="grafico">
+    <section className="grafico">
 
       <div className="grafico-header">
 
         <div>
-          <h2>Faturamento</h2>
-          <p>Desempenho dos últimos meses</p>
+
+          <h2>
+            Faturamento por projeto
+          </h2>
+
+          <p>
+            Distribuição dos valores cadastrados
+          </p>
+
         </div>
 
         <div className="grafico-controles">
 
           <select
             value={periodo}
-            onChange={(e) => setPeriodo(e.target.value)}
+            onChange={(e) =>
+              setPeriodo(e.target.value)
+            }
+            aria-label="Período do gráfico"
           >
-            <option value="3">3 meses</option>
-            <option value="6">6 meses</option>
-            <option value="12">Ano</option>
+            <option value="3">
+              3 projetos
+            </option>
+
+            <option value="6">
+              6 projetos
+            </option>
+
+            <option value="12">
+              Todos
+            </option>
           </select>
 
         </div>
 
       </div>
 
-      <ResponsiveContainer width="100%" height={300}>
+      {dadosFiltrados.length > 0 ? (
 
-        <LineChart data={dadosFiltrados}>
+        <ResponsiveContainer
+          width="100%"
+          height={300}
+        >
 
-          <CartesianGrid
-            strokeDasharray="3 3"
-            vertical={false}
-          />
+          <LineChart
+            data={dadosFiltrados}
+            margin={{
+              top: 10,
+              right: 10,
+              left: 5,
+              bottom: 5
+            }}
+          >
 
-          <XAxis
-            dataKey="mes"
-            axisLine={false}
-            tickLine={false}
-          />
+            <CartesianGrid
+              strokeDasharray="4 4"
+              vertical={false}
+              stroke="rgba(148, 163, 184, .18)"
+            />
 
-          <YAxis
-            axisLine={false}
-            tickLine={false}
-            tickFormatter={(valor) => `R$ ${valor / 1000}k`}
-          />
+            <XAxis
+              dataKey="mes"
+              axisLine={false}
+              tickLine={false}
+              tick={{ fontSize: 11 }}
+            />
 
-          <Tooltip
-            content={<TooltipPersonalizado />}
-          />
+            <YAxis
+              axisLine={false}
+              tickLine={false}
+              tick={{ fontSize: 11 }}
+              tickFormatter={(valor) =>
+                `R$ ${Number(valor) / 1000}k`
+              }
+            />
 
-          <Line
-            type="monotone"
-            dataKey="valor"
-            stroke="#2563eb"
-            strokeWidth={3}
-            dot={{ r: 5 }}
-            activeDot={{ r: 7 }}
-          />
+            <Tooltip
+              cursor={{
+                stroke: 'rgba(99,102,241,.15)',
+                strokeWidth: 2
+              }}
+              content={
+                <TooltipPersonalizado />
+              }
+            />
 
-        </LineChart>
+            <Line
+              type="monotone"
+              dataKey="valor"
+              stroke="#6366f1"
+              strokeWidth={3}
+              dot={{
+                r: 4,
+                strokeWidth: 2,
+                fill: '#ffffff'
+              }}
+              activeDot={{
+                r: 7,
+                strokeWidth: 3
+              }}
+            />
 
-      </ResponsiveContainer>
+          </LineChart>
 
-    </div>
+        </ResponsiveContainer>
+
+      ) : (
+
+        <div className="grafico-vazio">
+
+          <div className="grafico-vazio-icon">
+            📊
+          </div>
+
+          <strong>
+            Nenhum faturamento disponível
+          </strong>
+
+          <p>
+            Cadastre um projeto com valor
+            para visualizar os dados.
+          </p>
+
+        </div>
+
+      )}
+
+    </section>
   )
 }
 

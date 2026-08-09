@@ -216,7 +216,12 @@ function App() {
   const projetosConcluidos =
     projetos.filter(
       (projeto) =>
-        projeto.status === 'Concluído'
+        String(projeto.status || '')
+          .trim()
+          .toLowerCase()
+          .normalize('NFD')
+          .replace(/[\u0300-\u036f]/g, '') ===
+        'concluido'
     ).length
 
   const totalClientes =
@@ -278,6 +283,7 @@ const dadosFaturamento = projetos.map(
 
           <a
             href="#"
+            className={pagina === 'dashboard' ? 'active' : ''}
             onClick={(e) => {
 
               e.preventDefault()
@@ -291,6 +297,7 @@ const dadosFaturamento = projetos.map(
 
           <a
             href="#"
+            className={pagina === 'projetos' ? 'active' : ''}
             onClick={(e) => {
 
               e.preventDefault()
@@ -304,6 +311,7 @@ const dadosFaturamento = projetos.map(
 
           <a
             href="#"
+            className={pagina === 'clientes' ? 'active' : ''}
             onClick={(e) => {
 
               e.preventDefault()
@@ -317,6 +325,7 @@ const dadosFaturamento = projetos.map(
 
           <a
             href="#"
+            className={pagina === 'relatorios' ? 'active' : ''}
             onClick={(e) => {
 
               e.preventDefault()
@@ -340,7 +349,7 @@ const dadosFaturamento = projetos.map(
 
         {pagina === 'projetos' ? (
 
-          <Projetos />
+          <Projetos setPagina={setPagina} />
 
         ) : pagina === 'clientes' ? (
 
@@ -452,7 +461,12 @@ const dadosFaturamento = projetos.map(
 
                 <section className="cards">
 
-                  <div className="card">
+                  <div
+                    className="card card-clickable"
+                    onClick={() => setPagina('projetos')}
+                    role="button"
+                    tabIndex={0}
+                  >
 
                     <div className="card-top">
 
@@ -476,7 +490,12 @@ const dadosFaturamento = projetos.map(
 
                   </div>
 
-                  <div className="card">
+                  <div
+                    className="card card-clickable"
+                    onClick={() => setPagina('clientes')}
+                    role="button"
+                    tabIndex={0}
+                  >
 
                     <div className="card-top">
 
@@ -500,12 +519,17 @@ const dadosFaturamento = projetos.map(
 
                   </div>
 
-                  <div className="card">
+                  <div
+                    className="card card-clickable"
+                    onClick={() => setPagina('relatorios')}
+                    role="button"
+                    tabIndex={0}
+                  >
 
                     <div className="card-top">
 
                       <span>
-                        Concluídos
+                        Projetos concluídos
                       </span>
 
                       <div className="card-icon">
@@ -524,7 +548,12 @@ const dadosFaturamento = projetos.map(
 
                   </div>
 
-                  <div className="card">
+                  <div
+                    className="card card-clickable"
+                    onClick={() => setPagina('relatorios')}
+                    role="button"
+                    tabIndex={0}
+                  >
 
                     <div className="card-top">
 

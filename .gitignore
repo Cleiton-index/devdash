@@ -22,3 +22,11 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Backups e arquivos temporários
+*.backup-*
+*.antes-*
+*.com-erro
+*.erro-v3
+App.css.limpo
+div:first-child
